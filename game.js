@@ -8,9 +8,9 @@ const hud = $("#hud");
 const modal = $("#modal");
 const toastEl = $("#toast");
 
-const SAVE_KEY = "fz_save_v1";
-const ACH_KEY = "fz_ach_v1";
-const DONE_KEY = "fz_done_v1";
+const SAVE_KEY = "fz_save_v2";
+const ACH_KEY = "fz_ach_v2";
+const DONE_KEY = "fz_done_v2";
 
 let S = null; // current run state
 
@@ -38,14 +38,14 @@ function awardAch(id) {
   const have = getAch();
   if (have.includes(id)) return;
   have.push(id);
-  saveJSON(ACH_KEY, have);
+  if (!window.__fzNoSave) saveJSON(ACH_KEY, have);
   if (S) { S.newAch = S.newAch || []; S.newAch.push(id); }
   const a = ACHIEVEMENTS.find((x) => x.id === id);
   if (a) toast(a.ico + " Achievement: " + a.name);
 }
 function markDone(id) {
   const d = loadJSON(DONE_KEY, []);
-  if (!d.includes(id)) { d.push(id); saveJSON(DONE_KEY, d); }
+  if (!d.includes(id)) { d.push(id); if (!window.__fzNoSave) saveJSON(DONE_KEY, d); }
   if (d.length >= CAREERS.length) awardAch("all-five");
 }
 
@@ -85,6 +85,7 @@ function newState(id) {
 }
 
 function save() {
+  if (window.__fzNoSave) return; // dev harnesses never persist
   if (S && S.phase !== "ending") saveJSON(SAVE_KEY, S);
 }
 function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
